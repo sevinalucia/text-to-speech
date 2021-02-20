@@ -1,0 +1,31 @@
+.placeholder-icon {
+  display: none;
+  width: 32px !important;
+  height: 32px !important;
+  opacity: 0.9 !important;
+  z-index: 999999 !important;
+  cursor: pointer !important;
+  position: absolute !important;
+  border-radius: 15px !important;
+  background-repeat: no-repeat !important;
+  background-color: rgb(8,124,234) !important;
+  background-position: center center !important;
+}
+
+.loading-circle {
+  top: -2px !important;
+  left: -2px !important;
+  border-width: 3px !important;
+  position: relative !important;
+  border-style: solid !important;
+  border-radius: 30px !important;
+  margin: -3px 0px 0px -3px !important;
+}
+
+@keyframes blink {
+  from, to {border-color: transparent}
+  50% {border-color: rgb(8,124,234)}
+}
+
+.placeholder-icon:hover {opacity: 1.0 !important}
+.loading-circle-blink {animation: 0.5s step-end 0s alternate none infinite running blink !important}

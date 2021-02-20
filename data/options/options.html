@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Options - Text to Speech (TTS)</title>
+    <link type="text/css" rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <div class="logo"></div>
+    <div>
+      <table>
+        <tr>
+          <td>
+            <label>
+              <span>Enable text-to-speech for "input" or "editable" areas</span>
+              <input data-pref="settings.enableInputArea" type="checkbox">
+            </label>
+            <p class="note">Unmark this option if you do not want to use text-to-speech for input or editable areas.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>
+              <span>Highlight text when text-to-speech is running</span>
+              <input data-pref="settings.showHighlight" type="checkbox">
+            </label>
+            <p class="note">For the highlight feature to work correctly, please select text paragraph-by-paragraph. Please note, highlight feature is still in Beta and may not work properly for all web-pages.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>
+              <span>Enable text-to-speech when text is selected by mouse while "Alt", "Insert" or "T" key is held</span>
+              <input data-pref="settings.selection" type="checkbox">
+            </label>
+            <p class="note">Text-to-speech bubble will be shown immediately after selection.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>
+              <span>Show a small bubble next to any selected text, clicking on the bubble will enable text-to-speech</span>
+              <input data-pref="settings.isBubbleIcon" type="checkbox">
+            </label>
+            <p class="note">Text-to-speech will be enabled after clicking the small bubble.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>
+              <span>After selecting any text, show the small bubble after</span>
+              <input data-pref="settings.placeholderIconShow" type="number">
+              <span> second(s).</span>
+            </label>
+            <p class="note">A small bubble will be shown after the above seconds. Default is 0 second.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>
+              <span>Hide the small bubble automatically after</span>
+              <input data-pref="settings.placeholderIconTime" type="number">
+              <span> second(s).</span>
+            </label>
+            <p class="note">The small bubble will be hidden after few seconds if you do not click on it. Note: values equal to or greater than 60 seconds mean the bubble will not be hidden until you click somewhere within the page.</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <script type="text/javascript" src="options.js"></script>
+  </body>
+</html>
