@@ -12,14 +12,17 @@
   background-position: center center !important;
 }
 
+.placeholder-icon[visible] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 .loading-circle {
-  top: -2px !important;
-  left: -2px !important;
+  margin: 0 !important;
   border-width: 3px !important;
-  position: relative !important;
   border-style: solid !important;
   border-radius: 30px !important;
-  margin: -3px 0px 0px -3px !important;
 }
 
 @keyframes blink {

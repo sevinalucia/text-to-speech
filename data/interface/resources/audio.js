@@ -38,8 +38,8 @@ var audio = {
     "match": function (word) {
       if (config.log) console.error(">> audio.play.match");
       if (word) {
-        var a = config.page.url === "local";
-        var b = document.location.href === config.page.url;
+        const a = config.page.url === "local";
+        const b = document.location.href === config.page.url;
         if (a || b) tts.engine.highlight.add(word);
       }
     },
@@ -47,10 +47,10 @@ var audio = {
       config.isplaying = false;
       tts.engine.highlight.remove();
       if (config.log) console.error(">> audio.play.index", i);
-      var flag = config.audiotextarray[i] && config.audiotextarray[i] !== " ";
+      const flag = config.audiotextarray[i] && config.audiotextarray[i] !== " ";
       if (flag) {
-        var a = config.page.url === "local";
-        var b = document.location.href === config.page.url;
+        const a = config.page.url === "local";
+        const b = document.location.href === config.page.url;
         if (a || b) tts.engine.highlight.add(config.audiotextarray[i]);
         /*  */
         config.isplaying = true;
