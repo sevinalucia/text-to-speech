@@ -3,8 +3,8 @@ body {
   width: 100%;
   margin: auto;
   padding: 0 10px;
-  max-width: 1080px;
-  background-color: #FFF;
+  max-width: 1200px;
+  background-color: #fff;
 }
 
 body, table {
@@ -40,15 +40,17 @@ input[type='text'] {
 }
 
 input[type='number'] {
+  padding: 0;
   color: #333;
   width: 128px;
-  height: 30px;
-  padding: 5px;
+  height: 38px;
   outline: none;
   font-size: 13px;
   font-weight: 600;
+  text-indent: 10px;
   font-family: monospace;
-  border: solid 1px rgba(0,0,0,0.25);
+  box-sizing: border-box;
+  border: solid 1px rgba(0, 0, 0, 0.25);
 }
 
 input[type='checkbox'] {
