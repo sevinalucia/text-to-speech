@@ -26,7 +26,11 @@ var tts = {
       }
     },
     "load": async function () {
-      config.element.buttons.setAttribute("loading", '');
+      if (config.element) {
+        if (config.element.buttons) {
+          config.element.buttons.setAttribute("loading", '');
+        }
+      }
       /*  */
       config.app.voice = {
         "play": function () {
@@ -345,6 +349,9 @@ var kokoro = {
       remote.permission = "Kokoro speech synthesis engine needs to download pre-trained model for: " + remote.host + " \n\nTo continue, press OK. Otherwise, press Cancel and change the speech synthesis engine. \n\nOnce downloaded, the data will be cached in memory, allowing the Speech to Text application to function offline."
       config.app.prefs.kokoro.permission = config.app.prefs.kokoro.permission || window.confirm(remote.permission);
       /*  */
+      config.element.input.setAttribute("loading", '');
+      config.element.buttons.setAttribute("loading", '');
+      /*  */
       if (config.app.prefs.kokoro.permission) {
         try {
           const progress = {};
@@ -359,8 +366,6 @@ var kokoro = {
           /*  */
           progress.size = {'a': 0, 'b': 0, 'c': 0};
           progress.percent = {'a': 0, 'b': 0, 'c': 0};
-          config.element.input.setAttribute("loading", '');
-          config.element.buttons.setAttribute("loading", '');
           config.show.info("loading", "Loading Koroko pre-trained model with 82 billion parameters.");
           await new Promise(resolve => window.setTimeout(resolve, 300));
           /*  */
@@ -371,18 +376,7 @@ var kokoro = {
             "progress_callback": async function (data) {
               if (data) {
                 if (data.status === "done") {
-                  await new Promise(resolve => window.setTimeout(resolve, 300));
-                  const gpuadapter = "gpu" in navigator ? await navigator.gpu.requestAdapter() : null;
-                  const gpudevice = gpuadapter ? await gpuadapter.requestDevice() : null;
                   /*  */
-                  if (gpuadapter && gpudevice) {
-                    config.support();
-                    kokoro.engine.init();
-                    config.show.info("start", "Please click on the speaker button to start the speech.");
-                  } else {
-                    config.nosupport();
-                    config.show.info("no_gpu", "Please reload the app or try a different browser.");
-                  }
                 } else {
                   if (data.file) {
                     progress.valid = data.loaded !== undefined && data.total !== undefined;
@@ -408,13 +402,26 @@ var kokoro = {
             }
           });
           /*  */
-          config.element.input.removeAttribute("loading");
-          config.element.buttons.removeAttribute("loading");
+          await new Promise(resolve => window.setTimeout(resolve, 300));
+          const gpuadapter = "gpu" in navigator ? await navigator.gpu.requestAdapter() : null;
+          const gpudevice = gpuadapter ? await gpuadapter.requestDevice() : null;
+          /*  */
+          if (gpuadapter && gpudevice) {
+            config.support();
+            kokoro.engine.init();
+            config.show.info("start", "Please click on the speaker button to start the speech.");
+          } else {
+            config.nosupport();
+            config.show.info("no_gpu", "Please reload the app or try a different browser.");
+          }
         } catch (e) {
           config.nosupport();
           config.show.info("error", e && e.message ? e.message : "Please reload the app or try a different browser.");
         }
       }
+      /*  */
+      config.element.input.removeAttribute("loading");
+      config.element.buttons.removeAttribute("loading");
     },
     "player": {
       "queue": [],
