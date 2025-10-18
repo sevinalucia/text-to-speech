@@ -413,7 +413,7 @@ var kokoro = {
           config.element.buttons.removeAttribute("loading");
         } catch (e) {
           config.nosupport();
-          config.show.info("error", "Please reload the app or try a different browser.");
+          config.show.info("error", e && e.message ? e.message : "Please reload the app or try a different browser.");
         }
       }
     },
