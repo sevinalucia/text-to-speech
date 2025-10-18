@@ -348,14 +348,13 @@ var kokoro = {
       if (config.app.prefs.kokoro.permission) {
         try {
           const progress = {};
-          const base = chrome.runtime.getURL("/data/interface/vendor/");
-          const {env, KokoroTTS} = await import(base + "kokoro.web.js");
+          const {env, KokoroTTS} = await import(chrome.runtime.getURL("/data/interface/vendor/kokoro.web.js"));
           /*  */
           env.telemetry = false;
           env.useNetwork = false;
           env.wasmPaths = {
-            "mjs": base + "wasm/" + "ort-wasm-simd-threaded.jsep.mjs",
-            "wasm": base + "wasm/" + "ort-wasm-simd-threaded.jsep.wasm"
+            "mjs": chrome.runtime.getURL("/data/interface/vendor/wasm/ort-wasm-simd-threaded.jsep.mjs"),
+            "wasm": chrome.runtime.getURL("/data/interface/vendor/wasm/ort-wasm-simd-threaded.jsep.wasm")
           };
           /*  */
           progress.size = {'a': 0, 'b': 0, 'c': 0};
