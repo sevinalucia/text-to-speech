@@ -20,7 +20,7 @@ table {
   height: 100%;
   margin: 0 auto;
   overflow: hidden;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .container .input {
@@ -30,7 +30,12 @@ table {
   overflow: hidden;
   box-sizing: border-box;
   width: calc(100% - 42px);
-  height: calc(100% - 64px);
+  height: calc(100vh - 200px);
+}
+
+.container .input pre[loading] {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .container .input pre {
@@ -43,9 +48,11 @@ table {
   padding: 10px;
   font-size: 14px;
   overflow-y: auto;
+  line-height: 1.5;
   font-weight: normal;
   text-align: justify;
-  white-space: normal;
+  white-space: pre-wrap;
+  word-break: break-word;
   background-color: #fff;
   box-sizing: border-box;
   font-family: arial, sans-serif;
@@ -54,6 +61,50 @@ table {
 .container .input pre:focus {
   border: 0;
   outline: none;
+}
+
+.container .console {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+  border-top: solid 1px rgba(0, 0, 0, 0.1);
+}
+
+.container .console a {
+  top: 0;
+  right: 0;
+  border: 0;
+  padding: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  transition: 300ms ease all;
+  background-color: transparent;
+}
+
+.container .console pre {
+  padding: 0;
+  width: 100%;
+  color: #333;
+  height: 100%;
+  margin: auto;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 22px;
+  max-height: 150px;
+  white-space: pre-wrap;
+  font-family: monospace;
 }
 
 .buttons {
@@ -65,7 +116,12 @@ table {
   align-items: center;
   background-color: #fff;
   justify-content: center;
-  border-top: solid 1px rgba(0,0,0,0.1);
+  border-top: solid 1px rgba(0, 0, 0, 0.1);
+}
+
+.buttons[loading] {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .buttons table tr td {
@@ -86,29 +142,30 @@ table {
   text-indent: 10px;
   vertical-align: middle;
   font-family: monospace;
-  border: solid 1px rgba(0,0,0,0.1);
+  border: solid 1px rgba(0, 0, 0, 0.1);
   transition: 300ms ease border-color;
 }
 
 .buttons select {
+  padding: 0;
   margin: 1px;
   color: #333;
   height: 42px;
-  width: 178px;
+  width: 150px;
   outline: none;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   background: #fff;
-  text-indent: 10px;
+  text-indent: 5px;
   vertical-align: middle;
   font-family: monospace;
-  border: solid 1px rgba(0,0,0,0.1);
+  border: solid 1px rgba(0, 0, 0, 0.1);
   transition: 300ms ease border-color;
 }
 
 .buttons select:hover {
-  border-color: rgba(0,0,0,0.2);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .buttons .start {
@@ -117,15 +174,15 @@ table {
   opacity: 0.8;
   text-align: center;
   transition: 300ms ease opacity;
-  border-right: solid 1px rgba(0,0,0,0.1);
+  border-right: solid 1px rgba(0, 0, 0, 0.1);
 }
 
 .buttons .start[color='white'] {
-  border-right-color: rgba(0,0,0,0.1);
+  border-right-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 .buttons .start[color='green'] {
-  border-right-color: rgb(65,179,79);
+  border-right-color: rgb(65, 179, 79) !important;
 }
 
 .buttons .start:hover {
@@ -171,7 +228,6 @@ table {
 .toolbar table tr td {
   border: 0;
   padding: 0;
-  color: #777;
   width: 42px;
   height: 42px;
   outline: none;
@@ -182,43 +238,119 @@ table {
   background-color: transparent;
 }
 
-.toolbar table tr td:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.toolbar table tr td:hover,
+.container .console a:hover {
+  background-color: rgba(0,  0,  0,  0.05);
 }
 
-.toolbar table tr td svg {
+.container .console a[href] svg {
+  fill: #3996ee;
+}
+
+@keyframes blink {
+  0%, 50%, 100% { 
+    fill: #555;
+  }
+  25%, 75% { 
+    fill: #3996ee;
+  }
+}
+
+.container .console a[href] svg {
+  animation: blink 2s step-start 2;
+}
+
+.toolbar table tr td svg,
+.container .console a svg {
   fill: #555;
   pointer-events: none;
   vertical-align: middle;
 }
 
-@media (max-width: 750px) {
+@media (max-width: 800px) {
   .buttons select {
-    width: 125px;
+    width: 130px;
   }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 700px) {
+  .buttons select {
+    width: 100px;
+  }
+}
+
+@media (max-width: 600px) {
   .toolbar {
     display: none !important;
   }
-  .container .results {
-    height: 350px;
+  .container .input {
+    width: 100%;
+    height: calc(100vh - 400px);
   }
-  .buttons input {
-    height: 36px;
-    margin-right: -1px;
+  .buttons input,
+  .buttons select {
+    height: 38px;
   }
   .buttons select {
     width: 100%;
-    height: 38px;
   }
-  .buttons #voices {
-    float: left;
-    width: calc(100% - 64px);
+  .buttons input {
+    width: calc(100% - 2px);
   }
 }
 
-html[context="webapp"] .toolbar {
+html[engine='webapi'] .container .console {
   display: none;
+}
+
+html[context="webapp"] .toolbar #support,
+html[context="webapp"] .toolbar #donation {
+  display: none;
+}
+
+html[theme='dark'], 
+html[theme='dark'] body {
+  color: #ebebeb;
+  color-scheme: dark;
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] .buttons input,
+html[theme='dark'] .buttons select,
+html[theme='dark'] .container .input pre {
+  color: #ebebeb;
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] .toolbar,
+html[theme='dark'] .buttons,
+html[theme='dark'] .toolbar table tr td {
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] .buttons .start button {
+  background-color: #fff;
+}
+
+html[theme='dark'] .toolbar table tr td:hover,
+html[theme='dark'] .container .console a:hover {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+html[theme='dark'] .container .console pre {
+  color: #ebebeb;
+}
+
+html[theme='dark'] .buttons,
+html[theme='dark'] .container,
+html[theme='dark'] .buttons input,
+html[theme='dark'] .buttons .start,
+html[theme='dark'] .buttons select,
+html[theme='dark'] .container .console {
+  border-color: rgb(255 255 255 / 25%);
+}
+
+html[theme='dark'] .toolbar table tr td svg,
+html[theme='dark'] .container .console a svg {
+  fill: #ebebeb;
 }

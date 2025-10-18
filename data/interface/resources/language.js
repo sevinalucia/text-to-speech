@@ -1,3 +1,40 @@
+kokoro.language = [
+  ['English', 
+    ['en-GB', 'United Kingdom', 
+      ['Kokoro Alice', 'bf_alice'], 
+      ['Kokoro Emma', 'bf_emma'], 
+      ['Kokoro Isabella', 'bf_isabella'], 
+      ['Kokoro Lily', 'bf_lily'], 
+      ['Kokoro Daniel', 'bm_daniel'], 
+      ['Kokoro Fable', 'bm_fable'], 
+      ['Kokoro George', 'bm_george'], 
+      ['Kokoro Lewis', 'bm_lewis']
+    ],
+    ['en-US', 'United States', 
+      ['Kokoro Adam', 'am_adam'], 
+      ['Kokoro Alloy', 'af_alloy'], 
+      ['Kokoro Aoede', 'af_aoede'], 
+      ['Kokoro Bella', 'af_bella'], 
+      ['Kokoro Echo', 'am_echo'], 
+      ['Kokoro Eric', 'am_eric'], 
+      ['Kokoro Fenrir', 'am_fenrir'], 
+      ['Kokoro Heart', 'af_heart'], 
+      ['Kokoro Jessica', 'af_jessica'], 
+      ['Kokoro Kore', 'af_kore'], 
+      ['Kokoro Liam', 'am_liam'], 
+      ['Kokoro Michael', 'am_michael'], 
+      ['Kokoro Nicole', 'af_nicole'], 
+      ['Kokoro Nova', 'af_nova'], 
+      ['Kokoro Onyx', 'am_onyx'], 
+      ['Kokoro Puck', 'am_puck'], 
+      ['Kokoro River', 'af_river'], 
+      ['Kokoro Santa', 'am_santa'], 
+      ['Kokoro Sarah', 'af_sarah'], 
+      ['Kokoro Sky', 'af_sky']
+    ]
+  ]
+];
+
 tts.language = [
   ['Afrikaans',       ['af-ZA']],
   ['አማርኛ',           ['am-ET']],

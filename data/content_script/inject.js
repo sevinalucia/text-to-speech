@@ -59,18 +59,30 @@ var config = {
   },
   "request": {
     "voice": function () {
-      const url = document.location.href;
-      const text = tts.engine.split.text(config.request.voice.text);
-      const state = config.icon.placeholder.element.getAttribute("state");
-      /*  */
-      config.page.url = url;
-      config.icon.placeholder.element.setAttribute("state", "loading");
-      config.icon.placeholder.element.style.backgroundImage = 'url("' + config.icon.loading + '")';
-      /*  */
-      if (state === "play") config.app.voice.play();
-      if (state === "pause") config.app.voice.pause();
-      if (state === "replay") config.app.voice.replay();
-      if (state === "voice") config.app.voice.start({"text": text, "url": url});
+      chrome.storage.local.get(null, async function (e) {
+        try {
+          const dialect = e.dialect !== undefined ? Number(e.dialect) : 11;
+          const language = e.language !== undefined ? Number(e.language) : 10;
+          /*  */
+          const languages = tts.language[language];
+          const locale = languages[dialect + 1] !== undefined ? languages[dialect + 1][0] : null;
+          /*  */
+          const url = document.location.href;
+          const text = tts.engine.split.text(config.request.voice.text, locale);
+          const state = config.icon.placeholder.element.getAttribute("state");
+          /*  */
+          config.page.url = url;
+          config.icon.placeholder.element.setAttribute("state", "loading");
+          config.icon.placeholder.element.style.backgroundImage = 'url("' + config.icon.loading + '")';
+          /*  */
+          if (state === "play") config.app.voice.play();
+          if (state === "pause") config.app.voice.pause();
+          if (state === "replay") config.app.voice.replay();
+          if (state === "voice") config.app.voice.start({"text": text, "url": url});
+        } catch (e) {
+          /*  */
+        }
+      });
     }
   },
   "icon": {
@@ -117,48 +129,6 @@ var config = {
             config.icon.placeholder.element.removeAttribute("visible");
           }, config.storage.placeholderIconTime * 1000);
         }
-      }
-    }
-  },
-  "selected": {
-    "text": function (t) {
-      const selection = function (e) {
-        const value = e.value;
-        const end = e.selectionEnd;
-        const start = e.selectionStart;
-        if (value && start && end) {
-          return value.substring(start, end);
-        }
-      };
-      /*  */
-      let selected = window.getSelection().toString();
-      if (!selected) selected = selection(t);
-      /*  */
-      return selected;
-    },
-    "rect": function (e) {
-      const range = e.getRangeAt(0).cloneRange();
-      const dummy = document.createElement("span");
-      if (range.startOffset !== range.endOffset) {
-        return range.getBoundingClientRect();
-      } else {
-        let arr = range.startContainer.childNodes;
-        for (let i = 0; i < arr.length; i++) {
-          const target = arr[i].nodeName.toLowerCase();
-          if (target === "textarea" || target === "input") {
-            let rect = getboundingbox(arr[i], arr[i].selectionStart, arr[i].selectionEnd);
-            if (rect.top && rect.left && rect.height && rect.width) {
-              return rect;
-            }
-          }
-        }
-        /*  */
-        range.collapse(false);
-        range.insertNode(dummy);
-        const rect = dummy.getBoundingClientRect();
-        dummy.parentNode.removeChild(dummy);
-        /*  */
-        return rect;
       }
     }
   },
@@ -224,6 +194,86 @@ var config = {
         } else {
           config.app.loader.canvas.classList.add("loading-circle-blink");
         }
+      }
+    }
+  },
+  "selected": {
+    "text": function (t) {
+      const selection = function (e) {
+        const value = e.value;
+        const end = e.selectionEnd;
+        const start = e.selectionStart;
+        if (value && start && end) {
+          return value.substring(start, end);
+        }
+      };
+      /*  */
+      let selected = window.getSelection().toString();
+      if (!selected) selected = selection(t);
+      /*  */
+      return selected;
+    },
+    "rect": function (e) {
+      const method = "NEW";
+      /*  */
+      if (method === "OLD") {
+        const range = e.getRangeAt(0).cloneRange();
+        const dummy = document.createElement("span");
+        if (range.startOffset !== range.endOffset) {
+          const rect = range.getBoundingClientRect();
+          return rect;
+        } else {
+          let arr = range.startContainer.childNodes;
+          for (let i = 0; i < arr.length; i++) {
+            const target = arr[i].nodeName.toLowerCase();
+            if (target === "textarea" || target === "input") {
+              let rect = getBoundingBox(arr[i], arr[i].selectionStart, arr[i].selectionEnd);
+              if (rect.top && rect.left && rect.height && rect.width) {
+                return rect;
+              }
+            }
+          }
+          /*  */
+          range.collapse(false);
+          range.insertNode(dummy);
+          const rect = dummy.getBoundingClientRect();
+          dummy.parentNode.removeChild(dummy);
+          /*  */
+          return rect;
+        }
+      } else {
+        if (!e || e.rangeCount === 0) return null;
+        /* 1. Handle normal (non-collapsed) DOM selection */
+        const range = e.getRangeAt(0).cloneRange();
+        if (!range.collapsed) {
+          const rect = range.getBoundingClientRect();
+          return rect;
+        }
+        /* 2. Handle caret or selection inside <input> / <textarea> */
+        const start = range.startContainer;
+        const input = start.nodeType === Node.ELEMENT_NODE ? start.closest("textarea, input") : start.parentElement?.closest("textarea, input");
+        /*  */
+        if (input && typeof getBoundingBox === "function") {
+          const rect = getBoundingBox(input, input.selectionStart, input.selectionEnd);
+          if (rect?.top && rect?.left && rect?.height && rect?.width) {
+            return rect;
+          }
+        }
+        /* 3. Handle collapsed caret in normal DOM nodes */
+        const dummy = document.createElement("span");
+        dummy.textContent = "\u200b";
+        /*  */
+        Object.assign(dummy.style, {
+          "opacity": '0',
+          "position": "absolute",
+          "pointerEvents": "none"
+        });
+        /*  */
+        range.insertNode(dummy);
+        const rect = dummy.getBoundingClientRect();
+        dummy.remove();
+        /*  */
+        return rect;
       }
     }
   },
@@ -309,12 +359,13 @@ var config = {
   }
 };
 
+background.receive("storage", function (e) {config.storage = e});
+background.receive("audio-text", function (e) {config.audiotextarray = e});
+
 document.addEventListener("mousedown", config.app.bubble.hide, false);
 document.addEventListener("mouseup", config.page.action.mouseup, false);
 document.addEventListener("keydown", config.page.action.keydown, false);
 document.addEventListener("keyup", function () {config.keycode = null}, false);
 document.addEventListener("DOMContentLoaded", config.page.action.contentloaded, false);
 
-background.receive("storage", function (e) {config.storage = e});
-background.receive("audio-text", function (e) {config.audiotextarray = e});
 window.addEventListener("beforeunload", config.page.action.beforeunload, false);

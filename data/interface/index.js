@@ -77,10 +77,26 @@ var config = {
       return chrome.runtime.getManifest().homepage_url;
     }
   },
+  "show": {
+    "info": function (i, q) {
+      const comment = q ? '\n' + ">> " + q : '';
+      config.element.info.textContent = ">> " + (i ? config.message[i] + comment : comment);
+    }
+  },
+  "message": {
+    "end": "Speech synthesis is ended.",
+    "error": "An unexpected error happened!",
+    "no_permission": "Host permission denied!",
+    "start": "Text to Speech (TTS) app is ready.",
+    "no_gpu": "WebGPU API is not supported in your browser!",
+    "loading": "Text to Speech (TTS) is loading, please wait...",
+    "no_support": "Speech synthesis API is NOT supported in your browser!"
+  },
   "nosupport": function () {
     config.button.size.disabled = true;
     config.button.start.disabled = true;
     config.button.voices.disabled = true;
+    config.button.engine.disabled = true;
     config.button.dialect.disabled = true;
     config.button.language.disabled = true;
     window.setTimeout(function () {
@@ -88,12 +104,14 @@ var config = {
     }, 500);
   },
   "support": function () {
+    config.button.size.disabled = false;
     config.button.start.disabled = false;
     config.button.voices.disabled = false;
+    config.button.engine.disabled = false;
     config.button.dialect.disabled = false;
     config.button.language.disabled = false;
     window.setTimeout(function () {
-      config.button.speak.src = "images/speakeractive.png";
+      config.button.speak.src = "images/speaker.png";
     }, 500);
   },
   "resize": {
@@ -111,31 +129,6 @@ var config = {
             "height": current.height
           });
         }, 1000);
-      }
-    }
-  },
-  "storage": {
-    "local": {},
-    "read": function (id) {
-      return config.storage.local[id];
-    },
-    "load": function (callback) {
-      chrome.storage.local.get(null, function (e) {
-        config.storage.local = e;
-        callback();
-      });
-    },
-    "write": function (id, data) {
-      if (id) {
-        if (data !== '' && data !== null && data !== undefined) {
-          let tmp = {};
-          tmp[id] = data;
-          config.storage.local[id] = data;
-          chrome.storage.local.set(tmp, function () {});
-        } else {
-          delete config.storage.local[id];
-          chrome.storage.local.remove(id, function () {});
-        }
       }
     }
   },
@@ -165,27 +158,70 @@ var config = {
       document.documentElement.setAttribute("context", config.port.name);
     }
   },
+  "storage": {
+    "local": {},
+    "read": function (id) {
+      return config.storage.local[id];
+    },
+    "reset": function (callback) {
+      chrome.storage.local.clear(callback);
+    },
+    "load": function (callback) {
+      chrome.storage.local.get(null, function (e) {
+        config.storage.local = e;
+        callback();
+      });
+    },
+    "write": function (id, data) {
+      if (id) {
+        if (data !== '' && data !== null && data !== undefined) {
+          let tmp = {};
+          tmp[id] = data;
+          config.storage.local[id] = data;
+          chrome.storage.local.set(tmp, function () {});
+        } else {
+          delete config.storage.local[id];
+          chrome.storage.local.remove(id, function () {});
+        }
+      }
+    }
+  },
   "load": function () {
     config.state = "voice";
     /*  */
+    const theme = document.getElementById("theme");
+    const reset = document.getElementById("reset");
     const reload = document.getElementById("reload");
     const support = document.getElementById("support");
     const donation = document.getElementById("donation");
+    const actions = ["drop", "dragenter", "dragover", "dragleave"];
+    /*  */
+    config.element.info = document.getElementById("info");
+    config.element.input = document.getElementById("input");
+    config.element.buttons = document.querySelector(".buttons");
     /*  */
     config.button.size = document.getElementById("size");
     config.button.speak = document.getElementById("speak");
+    config.button.audio = document.getElementById("audio");
     config.button.start = document.getElementById("start");
-    config.element.input = document.getElementById("input");
+    config.button.engine = document.getElementById("engine");
     config.button.voices = document.getElementById("voices");
     config.button.dialect = document.getElementById("dialect");
     config.button.language = document.getElementById("language");
     /*  */
     config.button.start.addEventListener("click", config.app.speak, false);
     config.button.size.addEventListener("change", config.app.store.size, false);
-    config.element.input.addEventListener("change", config.app.store.input, false);
+    config.element.input.addEventListener("drop", config.app.store.input, false);
+    config.element.input.addEventListener("input", config.app.store.input, false);
     config.button.voices.addEventListener("change", config.app.store.voices, false);
+    config.button.engine.addEventListener("change", config.app.store.engine, false);
     config.button.dialect.addEventListener("change", config.app.store.dialect, false);
     config.button.language.addEventListener("change", config.app.store.language, false);
+    /*  */
+    actions.forEach(function (action) {
+      config.element.input.addEventListener(action, e => e.preventDefault(), false);
+      config.element.input.addEventListener(action, e => e.stopPropagation(), false);
+    });
     /*  */
     reload.addEventListener("click", function () {
       document.location.reload();
@@ -201,46 +237,75 @@ var config = {
       chrome.tabs.create({"url": url, "active": true});
     }, false);
     /*  */
+    theme.addEventListener("click", function () {
+      let attribute = document.documentElement.getAttribute("theme");
+      attribute = attribute === "dark" ? "light" : "dark";
+      /*  */
+      document.documentElement.setAttribute("theme", attribute);
+      config.storage.write("theme", attribute);
+    }, false);
+    /*  */
+    reset.addEventListener("click", function () {
+      const reset = window.confirm("Are you sure you want to reset the app to factory settings?");
+      if (reset) {
+        config.storage.reset(function () {
+          document.location.reload();
+        });
+      }
+    });
+    /*  */
+    config.button.audio.addEventListener("click", function (e) {
+      if (e) {
+        if (e.target) {
+          const href = e.target.getAttribute("href");
+          /*  */
+          if (href === null) {
+            window.alert("Please press the - Speak - button first to generate an audio, then click this button to download the final audio file (.wav)");
+          }
+        }
+      }
+    }, false);
+    /*  */
     config.storage.load(config.app.start);
     window.removeEventListener("load", config.load, false);
   },
   "app": {
-    "start": function () {
-      config.app.update.size();
-      config.app.fill.select();
-      tts.engine.load();
-    },
-    "prefs": {
-      set size (val) {config.storage.write("size", val)},
-      set input (val) {config.storage.write("input", val)},
-      set voices (val) {config.storage.write("voices", val)},
-      set dialect (val) {config.storage.write("dialect", val)},
-      set language (val) {config.storage.write("language", val)},
-      get size () {return config.storage.read("size") !== undefined ? config.storage.read("size") : 14},
-      get voices () {return config.storage.read("voices") !== undefined ? config.storage.read("voices") : 0},
-      get dialect () {return config.storage.read("dialect") !== undefined ? config.storage.read("dialect") : 11},
-      get language () {return config.storage.read("language") !== undefined ? config.storage.read("language") : 10},
-      get input () {return config.storage.read("input") !== undefined ? config.storage.read("input") : "A text to speech tool with natural sounding voices"}
-    },
-    "speak": function (e) {
-      config.button.start.src = "images/nospeaker.png";
-      const text = tts.engine.split.text(config.element.input.textContent);
+    "speak": function () {
+      config.button.speak.src = "images/speakeractive.png";
+      const text = tts.engine.split.text(config.element.input.textContent, null);
       /*  */
       if (config.state === "play") config.app.voice.play();
       if (config.state === "pause") config.app.voice.pause();
       if (config.state === "replay") config.app.voice.replay();
       if (config.state === "voice") config.app.voice.start({"text": text, "url": "local"});
     },
+    "start": function () {
+      const theme = config.app.prefs.theme;
+      const engine = config.app.prefs.engine;
+      /*  */
+      config.button.engine.value = engine;
+      document.documentElement.setAttribute("theme", theme);
+      document.documentElement.setAttribute("engine", config.app.prefs.engine);
+      /*  */
+      config.app.update.size();
+      config.app.fill.select();
+      /*  */
+      if (engine === "webapi") tts.engine.load();
+      if (engine === "kokoro") kokoro.engine.load();
+    },
     "fill": {
       "select": async function () {
-        await config.app.update.language(tts.language);
-        config.button.language.selectedIndex = config.button.language.length > config.app.prefs.language ? config.app.prefs.language : 0;
+        const engine = config.app.prefs.engine;
+        const language = engine === "webapi" ? tts.language : kokoro.language;
         /*  */
-        await config.app.update.voices(tts.language[config.app.prefs.language]);
-        config.button.voices.selectedIndex = config.button.voices.length > config.app.prefs.voices ? config.app.prefs.voices : 0;
+        await config.app.update.language(language);
+        config.button.language.selectedIndex = config.button.language.length > config.app.prefs[engine].language ? config.app.prefs[engine].language : 0;
         /*  */
-        await config.app.update.dialect(tts.language[config.app.prefs.language]);
-        config.button.dialect.selectedIndex = config.button.dialect.length > config.app.prefs.dialect ? config.app.prefs.dialect : 0;
+        await config.app.update.dialect(language[config.app.prefs[engine].language]);
+        config.button.dialect.selectedIndex = config.button.dialect.length > config.app.prefs[engine].dialect ? config.app.prefs[engine].dialect : 0;
+        /*  */
+        await config.app.update.voices(language[config.app.prefs[engine].language]);
+        config.button.voices.selectedIndex = config.button.voices.length > config.app.prefs[engine].voices ? config.app.prefs[engine].voices : 0;
         /*  */
         config.element.input.textContent = config.app.prefs.input;
         config.button.size.value = config.app.prefs.size;
@@ -268,31 +333,119 @@ var config = {
         _blink();
       }
     },
-    "store": {
-      "input": function (e) {
-        config.app.prefs.input = e.target.textContent;
+    "prefs": {
+      set size (val) {config.storage.write("size", val)},
+      set theme (val) {config.storage.write("theme", val)},
+      set input (val) {config.storage.write("input", val)},
+      set engine (val) {config.storage.write("engine", val)},
+      //
+      get size () {return config.storage.read("size") !== undefined ? config.storage.read("size") : 14},
+      get theme () {return config.storage.read("theme") !== undefined ? config.storage.read("theme") : "light"},
+      get engine () {return config.storage.read("engine") !== undefined ? config.storage.read("engine") : "webapi"},
+      get input () {return config.storage.read("input") !== undefined ? config.storage.read("input") : "A text to speech tool with natural sounding voices"},
+      //
+      "webapi": {
+        set voices (val) {config.storage.write("voices", val)},
+        set dialect (val) {config.storage.write("dialect", val)},
+        set language (val) {config.storage.write("language", val)},
+        get voices () {return config.storage.read("voices") !== undefined ? config.storage.read("voices") : 0},
+        get dialect () {return config.storage.read("dialect") !== undefined ? config.storage.read("dialect") : 11},
+        get language () {return config.storage.read("language") !== undefined ? config.storage.read("language") : 10}
       },
+      "kokoro": {
+        set voices (val) {config.storage.write("voices-kokoro", val)},
+        set permission (val) {config.storage.write("permission", val)},
+        set dialect (val) {config.storage.write("dialect-kokoro", val)},
+        set language (val) {config.storage.write("language-kokoro", val)},
+        get voices () {return config.storage.read("voices-kokoro") !== undefined ? config.storage.read("voices-kokoro") : 0},
+        get permission () {return config.storage.read("permission") !== undefined ? config.storage.read("permission") : false},
+        get dialect () {return config.storage.read("dialect-kokoro") !== undefined ? config.storage.read("dialect-kokoro") : 0},
+        get language () {return config.storage.read("language-kokoro") !== undefined ? config.storage.read("language-kokoro") : 0}
+      }
+    },
+    "store": {
       "size": function () {
         config.app.prefs.size = config.button.size.value;
         config.app.update.size();
       },
+      "engine": function () {
+        config.app.prefs.engine = config.button.engine.value;
+        /*  */
+        window.setTimeout(function () {
+          document.location.reload();
+        }, 300);
+      },
       "voices": function () {
-        config.app.prefs.voices = config.button.voices.selectedIndex;
-        tts.engine.methods.reset("local");
-        config.app.fill.select();
+        const engine = config.app.prefs.engine;
+        /*  */
+        config.app.prefs[engine].voices = config.button.voices.selectedIndex;
+        /*  */
+        if (engine === "webapi") {
+          tts.engine.methods.reset("local");
+          config.app.fill.select();
+        } else {
+          window.setTimeout(function () {
+            document.location.reload();
+          }, 300);
+        }
       },
       "dialect": function () {
-        config.app.prefs.voices = 0;
-        config.app.prefs.dialect = config.button.dialect.selectedIndex;
-        tts.engine.methods.reset("local");
-        config.app.fill.select();
+        const engine = config.app.prefs.engine;
+        /*  */
+        config.app.prefs[engine].voices = 0;
+        config.app.prefs[engine].dialect = config.button.dialect.selectedIndex;
+        /*  */
+        if (engine === "webapi") {
+          tts.engine.methods.reset("local");
+          config.app.fill.select();
+        } else {
+          window.setTimeout(function () {
+            document.location.reload();
+          }, 300);
+        }
       },
       "language": function () {
-        config.app.prefs.voices = 0;
-        config.app.prefs.dialect = 0;
-        config.app.prefs.language = config.button.language.selectedIndex;
-        tts.engine.methods.reset("local");
-        config.app.fill.select();
+        const engine = config.app.prefs.engine;
+        /*  */
+        config.app.prefs[engine].voices = 0;
+        config.app.prefs[engine].dialect = 0;
+        config.app.prefs[engine].language = config.button.language.selectedIndex;
+        /*  */
+        if (engine === "webapi") {
+          tts.engine.methods.reset("local");
+          config.app.fill.select();
+        } else {
+          window.setTimeout(function () {
+            document.location.reload();
+          }, 300);
+        }
+      },
+      "input": async function (e) {
+        const isbusy = document.querySelector(".start[color]");
+        if (isbusy) return;
+        /*  */
+        if (e) {
+          if (e.type === "drop") {
+            const data = e.dataTransfer;
+            if (data.types.includes("text/plain")) {
+              const text = data.getData("text/plain");
+              config.app.prefs.input = text;
+              config.element.input.textContent = text;
+            }
+            /*  */
+            if (data.files && data.files.length > 0) {
+              for (const file of data.files) {
+                if (file.type.startsWith("text/")) {
+                  const text = await file.text();
+                  config.app.prefs.input = text;
+                  config.element.input.textContent = text;
+                }
+              }
+            }
+          } else {
+            config.app.prefs.input = e.target.innerText;
+          }
+        }
       }
     },
     "update": {
@@ -349,36 +502,58 @@ var config = {
         }
       },
       "voices": async function (target) {
+        const engine = config.app.prefs.engine;
+        /*  */
         if (target) {
           config.button.voices.textContent = '';
           config.button.voices.style.visibility = "hidden";
           /*  */
-          const voices = await tts.engine.get.voices();
-          await new Promise((resolve) => {
-            if (voices) {
-              if (voices.length) {
-                for (let i = 0; i < voices.length; i++) {
-                  const code = target[config.app.prefs.dialect + 1] ? target[config.app.prefs.dialect + 1][0] : null;
-                  if (code) {
-                    if (code === voices[i].lang) {
-                      const value = i;
-                      const name = voices[i].name !== undefined ? voices[i].name : "System Default";
-                      const option = new Option(name, value);
-                      config.button.voices.add(option);
-                      config.button.voices.style.visibility = "visible";
+          if (engine === "webapi") {
+            const voices = await tts.engine.get.voices();
+            await new Promise((resolve) => {
+              if (voices) {
+                if (voices.length) {
+                  for (let i = 0; i < voices.length; i++) {
+                    const code = target[config.app.prefs[engine].dialect + 1] ? target[config.app.prefs[engine].dialect + 1][0] : null;
+                    if (code) {
+                      if (code === voices[i].lang) {
+                        const value = i;
+                        const name = voices[i].name !== undefined ? voices[i].name : "System Default";
+                        const option = new Option(name, value);
+                        config.button.voices.add(option);
+                        config.button.voices.style.visibility = "visible";
+                      }
                     }
                   }
                 }
               }
-            }
-            /*  */
-            if (config.button.voices.style.visibility === "hidden") {
-              config.button.voices.style.visibility = "visible";
-              config.button.voices.add(new Option("System Default", ''));
-            }
-            /*  */
-            window.setTimeout(resolve, 10);
-          });
+              /*  */
+              if (config.button.voices.style.visibility === "hidden") {
+                config.button.voices.style.visibility = "visible";
+                config.button.voices.add(new Option("System Default", ''));
+              }
+              /*  */
+              window.setTimeout(resolve, 10);
+            });
+          } else {
+            await new Promise((resolve) => {
+              const dialect = config.app.prefs.kokoro.dialect;
+              const voices = target[dialect + 1];
+              /*  */
+              for (let j = 2; j < voices.length; j++) {
+                const current = voices[j];
+                const value = current[1];
+                const name = current[0] !== undefined ? current[0] : "System Default";
+                if (name) {
+                  const option = new Option(name, value);
+                  config.button.voices.add(option);
+                  config.button.voices.style.visibility = "visible";
+                }
+              }
+              /*  */
+              window.setTimeout(resolve, 10);
+            });
+          }
         }
       }
     }

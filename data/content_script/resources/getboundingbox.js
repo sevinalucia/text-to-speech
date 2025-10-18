@@ -1,77 +1,79 @@
-// @author Rob W         http://stackoverflow.com/users/938089/rob-w
-// @name                 getTextBoundingRect
+/* 
+  Inspired by: https://stackoverflow.com/posts/7948715/revisions
+*/
 
-var getboundingbox = function (input, selectionStart, selectionEnd, debug) {
-  if (!input || !('value' in input)) return input;
-  if (typeof selectionStart == "string") selectionStart = parseFloat(selectionStart);
-  if (typeof selectionStart != "number" || isNaN(selectionStart)) selectionStart = 0;
-  if (selectionStart < 0) selectionStart = 0;
-  else selectionStart = Math.min(input.value.length, selectionStart);
-  if (typeof selectionEnd == "string") selectionEnd = parseFloat(selectionEnd);
-  if (typeof selectionEnd != "number" || isNaN(selectionEnd) || selectionEnd < selectionStart) selectionEnd = selectionStart;
-  if (selectionEnd < 0) selectionEnd = 0;
-  else selectionEnd = Math.min(input.value.length, selectionEnd);
-  if (typeof input.createTextRange == "function") {
-    var range = input.createTextRange();
+const getBoundingBox = function (input, selectionStart, selectionEnd, debug = false) {
+  if (!input || !("value" in input)) return null;
+  /*  */
+  selectionStart = Math.max(0, Math.min(input.value.length, +selectionStart || 0));
+  selectionEnd = Math.max(selectionStart, Math.min(input.value.length, +selectionEnd || selectionStart));
+  /* Old IE path */
+  if (typeof input.createTextRange === "function") {
+    const range = input.createTextRange();
     range.collapse(true);
-    range.moveStart('character', selectionStart);
-    range.moveEnd('character', selectionEnd - selectionStart);
+    range.moveStart("character", selectionStart);
+    range.moveEnd("character", selectionEnd - selectionStart);
     return range.getBoundingClientRect();
   }
-  var offset = getInputOffset(), topPos = offset.top, leftPos = offset.left, width = getInputCSS('width', true), height = getInputCSS('height', true);
-  var cssDefaultStyles = "white-space:pre;padding:0;margin:0;", listOfModifiers = ['direction', 'font-family', 'font-size', 'font-size-adjust', 'font-variant', 'font-weight', 'font-style', 'letter-spacing', 'line-height', 'text-align', 'text-indent', 'text-transform', 'word-wrap', 'word-spacing'];
-  topPos += getInputCSS('padding-top', true);
-  topPos += getInputCSS('border-top-width', true);
-  leftPos += getInputCSS('padding-left', true);
-  leftPos += getInputCSS('border-left-width', true);
-  leftPos += 1;
-  for (var i=0; i < listOfModifiers.length; i++) {
-    var property = listOfModifiers[i];
-    cssDefaultStyles += property + ':' + getInputCSS(property) +';';
-  }
-  var text = input.value, textLen = text.length, fakeClone = document.createElement("div");
-  if (selectionStart > 0) appendPart(0, selectionStart);
-  var fakeRange = appendPart(selectionStart, selectionEnd);
-  if (textLen > selectionEnd) appendPart(selectionEnd, textLen);
-  fakeClone.style.cssText = cssDefaultStyles;
-  fakeClone.style.position = "absolute";
-  fakeClone.style.top = topPos + "px";
-  fakeClone.style.left = leftPos + "px";
-  fakeClone.style.width = width + "px";
-  fakeClone.style.height = height + "px";
-  document.body.appendChild(fakeClone);
-  var returnValue = fakeRange.getBoundingClientRect();
-  if (!debug) fakeClone.parentNode.removeChild(fakeClone);
-  return returnValue;
-  function appendPart(start, end) {
-    var span = document.createElement("span");
-    span.style.cssText = cssDefaultStyles;
-    span.textContent = text.substring(start, end);
-    fakeClone.appendChild(span);
-    return span;
-  }
-  function getInputOffset () {
-    var body = document.body, win = document.defaultView, docElem = document.documentElement, box = document.createElement('div');
-    box.style.paddingLeft = box.style.width = "1px";
-    body.appendChild(box);
-    var isBoxModel = box.offsetWidth == 2;
-    body.removeChild(box);
-    box = input.getBoundingClientRect();
-    var clientTop = docElem.clientTop || body.clientTop || 0,
-        clientLeft = docElem.clientLeft || body.clientLeft || 0,
-        scrollTop = win.pageYOffset || isBoxModel && docElem.scrollTop  || body.scrollTop,
-        scrollLeft = win.pageXOffset || isBoxModel && docElem.scrollLeft || body.scrollLeft;
-    return {"top": box.top  + scrollTop  - clientTop, "left": box.left + scrollLeft - clientLeft};
-  }
-  function getInputCSS(prop, isnumber) {
-    var defaultView = document.defaultView;
-    if (defaultView) {
-      var dDGCS = defaultView.getComputedStyle(input, null);
-      if (dDGCS) {
-        var val = dDGCS.getPropertyValue(prop);
-        return isnumber ? parseFloat(val) : val;
-      }
-    }
-    return '';
-  }
+  /*  */
+  const getCSS = (prop, asNumber = false) => {
+    const val = getComputedStyle(input).getPropertyValue(prop);
+    return asNumber ? parseFloat(val) || 0 : val;
+  };
+  /*  */
+  const getOffset = () => {
+    const rect = input.getBoundingClientRect();
+    return {
+      "top": rect.top + window.scrollY, 
+      "left": rect.left + window.scrollX
+    };
+  };
+  /*  */
+  const offset = getOffset();
+  const width = getCSS("width", true);
+  const height = getCSS("height", true);
+  /*  */
+  const modifiers = [
+    "direction",
+    "font-size",
+    "word-wrap",
+    "text-align",
+    "font-style",
+    "font-family",
+    "font-weight",
+    "line-height",
+    "text-indent",
+    "white-space",
+    "word-spacing",
+    "font-variant",
+    "text-transform",
+    "letter-spacing"
+  ];
+  /*  */
+  const cssText = modifiers.map(p => `${p}:${getCSS(p)};`).join(' ') + "padding:0;margin:0;white-space:pre;";
+  /*  */
+  const fake = document.createElement("div");
+  Object.assign(fake.style, {
+    "width": `${width}px`,
+    "position": "absolute",
+    "height": `${height}px`,
+    ...debug ? {} : {"visibility": "hidden"},
+    "top": `${offset.top + getCSS("padding-top", true) + getCSS("border-top-width", true)}px`,
+    "left": `${offset.left + getCSS("padding-left", true) + getCSS("border-left-width", true)}px`
+  });
+  /*  */
+  fake.style.cssText += cssText;
+  /*  */
+  const text = input.value;
+  const selected = document.createElement("span");
+  const before = document.createTextNode(text.slice(0, selectionStart));
+  /*  */
+  selected.textContent = text.slice(selectionStart, selectionEnd) || "\u200b";
+  fake.append(before, selected);
+  document.body.appendChild(fake);
+  /*  */
+  const rect = selected.getBoundingClientRect();
+  if (!debug) fake.remove();
+  /*  */
+  return rect;
 };

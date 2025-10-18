@@ -1,45 +1,52 @@
 body {
   border: 0;
+  color: #333;
   width: 100%;
   margin: auto;
+  font-size: 13px;
   padding: 0 10px;
   max-width: 1200px;
   background-color: #fff;
-}
-
-body, table {
-  color: #333;
-  font-size: 13px;
   font-family: arial, sans-serif;
 }
 
-table {
-  border-spacing: 5px 20px;
-  border-collapse: separate;
+.container {
+  margin: 0;
+  border: 0;
+  padding: 0;
 }
 
-table tr td {
+.container table {
+  color: #333;
+  font-size: 13px;
+  border-spacing: 5px 25px;
+  border-collapse: separate;
+  font-family: arial, sans-serif;
+}
+
+.container table tr td {
   padding: 5px;
   padding-bottom: 10px;
   border-bottom: solid 1px rgba(0,0,0,0.05);
 }
 
-input {
+.container table input {
   margin-left: 5px;
   margin-right: 5px;
   vertical-align: middle;
 }
 
-select, span {
+.container table span,
+.container table select {
   vertical-align: middle;
   transition: 300ms ease all;
 }
 
-input[type='text'] {
+.container table input[type='text'] {
   width: 130px;
 }
 
-input[type='number'] {
+.container table input[type='number'] {
   padding: 0;
   color: #333;
   width: 128px;
@@ -53,13 +60,13 @@ input[type='number'] {
   border: solid 1px rgba(0, 0, 0, 0.25);
 }
 
-input[type='checkbox'] {
+.container table input[type='checkbox'] {
   padding: 0;
   float: right;
   margin: 0 10px;
 }
 
-select {
+.container table select {
   outline: 0;
   width: 160px;
   height: 24px;
@@ -73,7 +80,7 @@ select {
   color: #2b2b2b !important;
 }
 
-option {
+.container table option {
   text-align: left;
   padding: 0 0 0 10px;
   background-color: #fff;
@@ -83,43 +90,46 @@ option {
 .warning {color: #FB8F91}
 .description {color: white !important}
 
-input:focus {outline: none !important}
-select:focus {outline: none !important}
-button:focus {outline: none !important}
-option:focus {outline: none !important}
+.container table input:focus {outline: none !important}
+.container table select:focus {outline: none !important}
+.container table button:focus {outline: none !important}
+.container table option:focus {outline: none !important}
 
-input::-moz-focus-inner {border: 0 !important} input::-moz-focus-outer {border: 0 !important}
-button::-moz-focus-inner {border: 0 !important} button::-moz-focus-outer {border: 0 !important}
-select::-moz-focus-inner {border: 0 !important} select::-moz-focus-outer {border: 0 !important}
-option::-moz-focus-inner {border: 0 !important} option::-moz-focus-outer {border: 0 !important}
+.container table input::-moz-focus-inner {border: 0 !important} input::-moz-focus-outer {border: 0 !important}
+.container table button::-moz-focus-inner {border: 0 !important} button::-moz-focus-outer {border: 0 !important}
+.container table select::-moz-focus-inner {border: 0 !important} select::-moz-focus-outer {border: 0 !important}
+.container table option::-moz-focus-inner {border: 0 !important} option::-moz-focus-outer {border: 0 !important}
 
-.flex {
+.container table .flex {
   margin: auto;
   display: flex;
   display: -webkit-flex;
   flex-direction: column;
 }
 
-.note {
+.container table .note {
   margin: 0;
   padding: 10px 0;
   line-height: 18px;
   padding-bottom: 5px;
-  color: #555 !important;
+  color: #676767 !important;
 }
 
-#google-tts-api, #html5-tts-api {
+#html5-tts-api,
+#google-tts-api {
   cursor: pointer;
   padding: 5px 20px;
   border: solid 1px #777777;
 }
 
-#google-tts-api:hover, #html5-tts-api:hover {
+#html5-tts-api:hover,
+#google-tts-api:hover {
   color: #FFF;
   background-color: #777777;
 }
 
-#google-tts-api[type='clicked'], #html5-tts-api[type='clicked'] {
+#html5-tts-api[type='clicked'],
+#google-tts-api[type='clicked'] {
   color: #FFF;
   background-color: #777777;
 }
@@ -130,4 +140,39 @@ option::-moz-focus-inner {border: 0 !important} option::-moz-focus-outer {border
   border-bottom: solid 1px rgba(0,0,0,0.1);
   background: url('../icons/128.png') no-repeat center center;
   background-size: 64px;
+}
+
+html[theme='dark'], 
+html[theme='dark'] body {
+  color: #ebebeb;
+  color-scheme: dark;
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] .container,
+html[theme='dark'] .container table input[type='number'] {
+  color: #ebebeb;
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] .container table .note {
+  color: #b9b9b9 !important;
+}
+
+html[theme='dark'] .container table span,
+html[theme='dark'] .container table select {
+  color: #ebebeb;
+}
+
+html[theme='dark'] .container table tr td {
+  border-color: rgb(255 255 255 / 10%);
+}
+
+html[theme='dark'] .logo,
+html[theme='dark'] .container table input[type='number'] {
+  border-color: rgb(255 255 255 / 25%);
+}
+
+html[theme='dark'] .toolbar svg {
+  fill: #ebebeb;
 }
