@@ -72,6 +72,7 @@ var config = {
   "page": {"url": "local"},
   "selected": {"parent": null},
   "css": {"id": "tts-highlight-color-css"},
+  "isgecko": navigator.userAgent.toLowerCase().includes("firefox"),
   "addon": {
     "homepage": function () {
       return chrome.runtime.getManifest().homepage_url;
@@ -97,6 +98,7 @@ var config = {
     config.button.start.disabled = true;
     config.button.voices.disabled = true;
     config.button.engine.disabled = true;
+    config.button.backend.disabled = true;
     config.button.dialect.disabled = true;
     config.button.language.disabled = true;
     window.setTimeout(function () {
@@ -108,6 +110,7 @@ var config = {
     config.button.start.disabled = false;
     config.button.voices.disabled = false;
     config.button.engine.disabled = false;
+    config.button.backend.disabled = false;
     config.button.dialect.disabled = false;
     config.button.language.disabled = false;
     window.setTimeout(function () {
@@ -206,6 +209,7 @@ var config = {
     config.button.start = document.getElementById("start");
     config.button.engine = document.getElementById("engine");
     config.button.voices = document.getElementById("voices");
+    config.button.backend = document.getElementById("backend");
     config.button.dialect = document.getElementById("dialect");
     config.button.language = document.getElementById("language");
     /*  */
@@ -215,6 +219,7 @@ var config = {
     config.element.input.addEventListener("input", config.app.store.input, false);
     config.button.voices.addEventListener("change", config.app.store.voices, false);
     config.button.engine.addEventListener("change", config.app.store.engine, false);
+    config.button.backend.addEventListener("change", config.app.store.backend, false);
     config.button.dialect.addEventListener("change", config.app.store.dialect, false);
     config.button.language.addEventListener("change", config.app.store.language, false);
     /*  */
@@ -282,8 +287,10 @@ var config = {
     "start": function () {
       const theme = config.app.prefs.theme;
       const engine = config.app.prefs.engine;
+      const backend = config.app.prefs.backend;
       /*  */
       config.button.engine.value = engine;
+      config.button.backend.value = backend;
       document.documentElement.setAttribute("theme", theme);
       document.documentElement.setAttribute("engine", config.app.prefs.engine);
       /*  */
@@ -338,10 +345,12 @@ var config = {
       set theme (val) {config.storage.write("theme", val)},
       set input (val) {config.storage.write("input", val)},
       set engine (val) {config.storage.write("engine", val)},
+      set backend (val) {config.storage.write("backend", val)},
       //
       get size () {return config.storage.read("size") !== undefined ? config.storage.read("size") : 14},
       get theme () {return config.storage.read("theme") !== undefined ? config.storage.read("theme") : "light"},
       get engine () {return config.storage.read("engine") !== undefined ? config.storage.read("engine") : "webapi"},
+      get backend () {return config.storage.read("backend") !== undefined ? config.storage.read("backend") : config.isgecko ? "wasm" : "webgpu"},
       get input () {return config.storage.read("input") !== undefined ? config.storage.read("input") : "A text to speech tool with natural sounding voices"},
       //
       "webapi": {
@@ -370,6 +379,13 @@ var config = {
       },
       "engine": function () {
         config.app.prefs.engine = config.button.engine.value;
+        /*  */
+        window.setTimeout(function () {
+          document.location.reload();
+        }, 300);
+      },
+      "backend": function () {
+        config.app.prefs.backend = config.button.backend.value;
         /*  */
         window.setTimeout(function () {
           document.location.reload();

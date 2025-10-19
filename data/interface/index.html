@@ -70,9 +70,13 @@
             </button>
           </td>
           <td class="settings">
-            <select id="engine" title="Select a Speech Recognition Engine">
+            <select id="engine" title="Select a speech recognition engine">
               <option value="kokoro">Kokoro AI</option>
               <option value="webapi">Web Speech API</option>
+            </select>
+            <select id="backend" title="Select the text to speech backend">
+              <option value="wasm">CPU (WASM)</option>
+              <option value="webgpu">GPU (WebGPU)</option>
             </select>
             <select id="language" title="Select a language"></select>
             <select id="dialect" title="Select a dialect"></select>

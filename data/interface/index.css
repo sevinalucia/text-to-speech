@@ -267,19 +267,25 @@ table {
   vertical-align: middle;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 950px) {
   .buttons select {
     width: 130px;
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 850px) {
   .buttons select {
-    width: 100px;
+    width: 110px;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 750px) {
+  .buttons select {
+    width: 90px;
+  }
+}
+
+@media (max-width: 650px) {
   .toolbar {
     display: none !important;
   }
@@ -299,6 +305,7 @@ table {
   }
 }
 
+html[engine='webapi'] #backend,
 html[engine='webapi'] .container .console {
   display: none;
 }

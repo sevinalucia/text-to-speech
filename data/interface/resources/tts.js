@@ -371,8 +371,8 @@ var kokoro = {
           /*  */
           kokoro.engine.instance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
             "dtype": "fp32",
-            "device": "webgpu",
             "quantized": false,
+            "device": config.app.prefs.backend,
             "progress_callback": async function (data) {
               if (data) {
                 if (data.status === "done") {
@@ -405,8 +405,9 @@ var kokoro = {
           await new Promise(resolve => window.setTimeout(resolve, 300));
           const gpuadapter = "gpu" in navigator ? await navigator.gpu.requestAdapter() : null;
           const gpudevice = gpuadapter ? await gpuadapter.requestDevice() : null;
+          const supported = config.app.prefs.backend === "wasm" ? true : gpuadapter && gpudevice;
           /*  */
-          if (gpuadapter && gpudevice) {
+          if (supported) {
             config.support();
             kokoro.engine.init();
             config.show.info("start", "Please click on the speaker button to start the speech.");
@@ -496,54 +497,58 @@ var kokoro = {
         }
       },
       "next": async function (resumeSame = false) {
-        config.element.input.removeAttribute("loading");
-        if (this.currentIndex >= this.sentences.length) return;
-        /*  */
-        let currentBuffer;
-        if (resumeSame && this._currentBuffer) {
-          currentBuffer = this._currentBuffer;
-        } else {
-          currentBuffer = this.queue.find(q => q.sentenceIndex === this.currentIndex);
-          if (!currentBuffer) {
-            currentBuffer = {
-              "buffer": await this.buffer(this.sentences[this.currentIndex])
-            };
-          }
+        try {
+          config.element.input.removeAttribute("loading");
+          if (this.currentIndex >= this.sentences.length) return;
           /*  */
-          this._currentBuffer = currentBuffer;
-        }
-        /*  */
-        if (!currentBuffer) return;
-        /*  */
-        const {buffer} = currentBuffer;
-        this.currentSource = this.context.createBufferSource();
-        this.currentSource.buffer = buffer;
-        this.currentSource.connect(this.context.destination);
-        tts.engine.highlight.add(this.sentences[this.currentIndex]);
-        config.show.info("start", "Please click the speaker button to stop the playback.");
-        this.currentSource.start(0);
-        /*  */
-        const nextIndex = this.currentIndex + this.preloadCount;
-        if (nextIndex < this.sentences.length && !this.queue.find(q => q.sentenceIndex === nextIndex)) {
-          this.buffer(this.sentences[nextIndex]).then(buf => {
-            this.queue.push({
-              "buffer": buf,
-              "sentenceIndex": nextIndex
-            });
-          });
-        }
-        /*  */
-        return new Promise(resolve => {
-          this.currentSource.onended = () => {
-            if (!this.ispaused) {
-              this.currentIndex++;
-              this._currentBuffer = null;
+          let currentBuffer;
+          if (resumeSame && this._currentBuffer) {
+            currentBuffer = this._currentBuffer;
+          } else {
+            currentBuffer = this.queue.find(q => q.sentenceIndex === this.currentIndex);
+            if (!currentBuffer) {
+              currentBuffer = {
+                "buffer": await this.buffer(this.sentences[this.currentIndex])
+              };
             }
             /*  */
-            this.currentSource = null;
-            resolve();
-          };
-        });
+            this._currentBuffer = currentBuffer;
+          }
+          /*  */
+          if (!currentBuffer) return;
+          /*  */
+          const {buffer} = currentBuffer;
+          this.currentSource = this.context.createBufferSource();
+          this.currentSource.buffer = buffer;
+          this.currentSource.connect(this.context.destination);
+          tts.engine.highlight.add(this.sentences[this.currentIndex]);
+          config.show.info("start", "Please click the speaker button to stop the playback.");
+          this.currentSource.start(0);
+          /*  */
+          const nextIndex = this.currentIndex + this.preloadCount;
+          if (nextIndex < this.sentences.length && !this.queue.find(q => q.sentenceIndex === nextIndex)) {
+            this.buffer(this.sentences[nextIndex]).then(buf => {
+              this.queue.push({
+                "buffer": buf,
+                "sentenceIndex": nextIndex
+              });
+            });
+          }
+          /*  */
+          return new Promise(resolve => {
+            this.currentSource.onended = () => {
+              if (!this.ispaused) {
+                this.currentIndex++;
+                this._currentBuffer = null;
+              }
+              /*  */
+              this.currentSource = null;
+              resolve();
+            };
+          });
+        } catch (e) {
+          /*  */
+        }
       },
       "audio": {
         "file": function () {
